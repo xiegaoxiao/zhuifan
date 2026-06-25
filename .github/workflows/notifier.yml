@@ -1,0 +1,36 @@
+name: anime-notifier
+
+on:
+  schedule:
+    # UTC 12:00 = Asia/Shanghai 20:00
+    - cron: "0 12 * * *"
+  workflow_dispatch:           # 允许手动触发
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Ensure config.yaml exists
+        run: |
+          if [ ! -f config.yaml ]; then
+            cp config.example.yaml config.yaml
+            echo "::warning::config.yaml was missing — created from example. Edit and commit before next run."
+          fi
+      - run: python -m anime_notifier
+        env:
+          WECHAT_SEND_KEY: ${{ secrets.WECHAT_SEND_KEY }}
+      - name: Commit state.json
+        run: |
+          git config user.name "anime-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state.json
+          git diff --staged --quiet || git commit -m "chore: bump episode counts"
+          git push
+        env:
+          ACTIONS_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
