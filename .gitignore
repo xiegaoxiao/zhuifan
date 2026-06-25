@@ -13,3 +13,6 @@ venv/
 
 # State backup
 *.bak
+
+# Claude Code / spec-workflow 元数据（不属于本项目源码）
+.spec-workflow/
