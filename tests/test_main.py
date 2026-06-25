@@ -2,6 +2,7 @@
 import sys
 from datetime import datetime, timezone, timedelta
 import pytest
+import httpx
 
 from anime_notifier import __main__ as cli
 
@@ -48,7 +49,6 @@ def test_normal_run_pushes_message(tmp_path, monkeypatch, respx_mock):
     monkeypatch.chdir(tmp_path)
     _write_config(tmp_path, [("巨人", 4, "11:00"), ("芙莉莲", 4, "11:00")])
 
-    import httpx
     captured: dict = {}
 
     def capture(request: httpx.Request) -> httpx.Response:
@@ -74,7 +74,6 @@ def test_no_match_does_not_push(tmp_path, monkeypatch, respx_mock):
     monkeypatch.chdir(tmp_path)
     _write_config(tmp_path, [("巨人", 4, "11:00")])  # 周四 11:00 才有
 
-    import httpx
     route = respx_mock.post("https://sctapi.ftqq.com/SCT_TEST.send").mock(
         return_value=httpx.Response(200, json={"code": 0, "message": "ok"})
     )
