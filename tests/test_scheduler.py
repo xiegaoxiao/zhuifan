@@ -44,8 +44,8 @@ def test_no_match_returns_none_title():
     assert "💤" in msg
 
 
-def test_weekday_match_but_air_time_different():
-    """周四 10:00：将夜 是周四 11:00，不是 10:00，所以不推。"""
+def test_weekday_match_but_air_time_too_far():
+    """周四 10:00 vs 周四 11:00 番：差 60 分钟，超出 ±30 分钟容错，不推。"""
     title, msg = run(_now(weekday=4, hh=10), copy.deepcopy(CONFIG))
     assert title is None
     assert "将夜" not in msg
@@ -54,6 +54,31 @@ def test_weekday_match_but_air_time_different():
 def test_air_time_minute_matters():
     """周四 11:00：将夜 11:00 匹配。"""
     title, msg = run(_now(weekday=4, hh=11, mm=0), copy.deepcopy(CONFIG))
+    assert title == "动漫更新：将夜"
+
+
+def test_air_time_within_plus_30_minutes_matches():
+    """±30 分钟容错：周四 10:30 vs 周四 11:00 番（差 30 分钟）→ 匹配。"""
+    title, msg = run(_now(weekday=4, hh=10, mm=30), copy.deepcopy(CONFIG))
+    assert title == "动漫更新：将夜"
+
+
+def test_air_time_within_minus_30_minutes_matches():
+    """±30 分钟容错：周四 11:30 vs 周四 11:00 番（差 30 分钟）→ 匹配。"""
+    title, msg = run(_now(weekday=4, hh=11, mm=30), copy.deepcopy(CONFIG))
+    assert title == "动漫更新：将夜"
+
+
+def test_air_time_outside_30_minute_tolerance_does_not_match():
+    """±30 分钟容错：周四 10:29 vs 周四 11:00 番（差 31 分钟）→ 不匹配。"""
+    title, msg = run(_now(weekday=4, hh=10, mm=29), copy.deepcopy(CONFIG))
+    assert title is None
+
+
+def test_air_time_tolerance_30_minutes_exact():
+    """±30 分钟容错：周四 10:30 vs 周四 11:00 番（恰好 30 分钟）→ 匹配。"""
+    # 边界值测试：abs(30) <= 30 应为 True
+    title, msg = run(_now(weekday=4, hh=10, mm=30), copy.deepcopy(CONFIG))
     assert title == "动漫更新：将夜"
 
 
