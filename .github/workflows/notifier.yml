@@ -2,8 +2,21 @@ name: anime-notifier
 
 on:
   schedule:
-    # UTC 12:00 = Asia/Shanghai 20:00
-    - cron: "0 12 * * *"
+    # 周一
+    - cron: "0 10 * * 1"      # 仙逆
+    # 周二
+    - cron: "0 10 * * 2"      # 吞噬星空
+    # 周四
+    - cron: "0 11 * * 4"      # 将夜
+    # 周五
+    - cron: "0 10 * * 5"      # 完美世界 + 沧元图
+    - cron: "0 11 * * 5"      # 深空彼岸
+    - cron: "0 12 * * 5"      # 斗罗大陆2
+    # 周六
+    - cron: "0 11 * * 6"      # 凡人修仙传
+    # 周日
+    - cron: "0 10 * * 0"      # 斗破苍穹
+    - cron: "0 11 * * 0"      # 牧神记
   workflow_dispatch:           # 允许手动触发
 
 jobs:
@@ -11,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write         # 让默认 GITHUB_TOKEN 能 push state.json
+      contents: read           # 只需要读 checkout，不需要 write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,12 +40,3 @@ jobs:
       - run: python -m anime_notifier
         env:
           WECHAT_SEND_KEY: ${{ secrets.WECHAT_SEND_KEY }}
-      - name: Commit state.json
-        run: |
-          git config user.name "anime-bot"
-          git config user.email "bot@users.noreply.github.com"
-          git add state.json
-          git diff --staged --quiet || git commit -m "chore: bump episode counts"
-          git push
-        env:
-          ACTIONS_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
