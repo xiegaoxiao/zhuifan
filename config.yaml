@@ -1,0 +1,15 @@
+# 追番时间表 —— 工具每天检查今天 weekday 匹配的条目
+# weekday 编码：1=周一, 2=周二, ..., 7=周日
+schedule:
+  - name: 进击的巨人 最终季
+    weekday: 4          # 周四播出
+  - name: 葬送的芙莉莲
+    weekday: 5          # 周五播出
+  - name: 孤独摇滚
+    weekday: 6          # 周六播出
+
+wechat:
+  # 真实 SendKey 从 GitHub Secrets 的 WECHAT_SEND_KEY 注入，不要直接填值
+  send_key: "${WECHAT_SEND_KEY}"
+  push_time: "20:00"
+  timezone: "Asia/Shanghai"
