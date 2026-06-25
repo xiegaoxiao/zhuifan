@@ -26,7 +26,12 @@
 | 名称 | 值 |
 |---|---|
 | `WECHAT_SEND_KEY` | 第 2 步拿到的 SendKey |
-| `ACTIONS_TOKEN` | 一个有 `repo` 权限的 GitHub PAT（[点这里创建](https://github.com/settings/tokens/new)，选 `repo` 即可，**勾上 workflow 权限**） |
+| `ACTIONS_TOKEN` | 一个**Classic** GitHub PAT（[点这里创建](https://github.com/settings/tokens/new)），**Expiration** 选 `No expiration`，**Scopes** **必须**勾 ✅ `repo`（"Full control of private repositories"） |
+
+> ⚠️ **PAT 三件套必做**：
+> 1. 创建时勾 `repo`（默认不勾，只勾了 public_repo 是不够的）
+> 2. 创建后**先在本地测 push**：`git clone https://<你的PAT>@github.com/<用户名>/<仓库>.git test && cd test && echo ok >> README.md && git push && cd .. && rm -rf test`，能成功再继续
+> 3. 填到 Secrets 时**不要带前后空格/换行**（密码管理器粘贴容易带）
 
 ### 4. 编辑 `config.yaml`
 
@@ -34,8 +39,14 @@
 git clone https://github.com/你的用户名/anime-notifier.git
 cd anime-notifier
 cp config.example.yaml config.yaml
-$EDITOR config.yaml   # 填入你的追番列表
+$EDITOR config.yaml
 ```
+
+> ⚠️ **必须**把 `send_key:` 改成占位符（**绝对不能**直接填 SendKey 进 git 历史）：
+> ```yaml
+> wechat:
+>   send_key: "${WECHAT_SEND_KEY}"   # 占位符，CI 时自动注入
+> ```
 
 `weekday` 编码：`1`=周一, `2`=周二, ..., `7`=周日。
 
@@ -92,7 +103,3 @@ python -m anime_notifier
 ## 架构
 
 见 [`docs/superpowers/specs/2026-06-25-anime-update-notifier-design.md`](docs/superpowers/specs/2026-06-25-anime-update-notifier-design.md)。
-"test $(date)" 
-"test $(date)" 
-"test $(date)" 
-"test $(date)" 
