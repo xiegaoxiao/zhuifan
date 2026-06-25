@@ -10,6 +10,8 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: write         # 让默认 GITHUB_TOKEN 能 push state.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
