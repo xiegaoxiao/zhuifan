@@ -1,33 +1,32 @@
-"""核心调度算法：根据今天 weekday 决定推送哪些番剧。"""
+"""核心调度算法：根据当前时间决定推送哪些番剧。"""
 from __future__ import annotations
-from datetime import date
+from datetime import datetime
 from typing import Any
 
 
-def run(today: date, config: dict[str, Any], state: dict[str, Any]) -> tuple[dict[str, Any], str]:
-    """根据 `today` 找出今天 weekday 匹配的番剧，自增集数，返回 (新 state, 消息)。
+def run(now: datetime, config: dict[str, Any]) -> tuple[str | None, str]:
+    """根据 `now` 找出"今天 weekday 匹配且 air_time == 当前分钟"的番剧。
 
-    `today` 必须已转换为 Asia/Shanghai 时区（由调用方负责）。
-    state 会被浅拷贝后再修改。
+    返回 (title, msg)：
+    - 有匹配：title = "动漫更新：X、Y..."，msg 含 📺 列表
+    - 无匹配：title = None，msg = "💤 今天没有要追的番"
+
+    `now` 必须是带时区的 datetime（Asia/Shanghai，由调用方负责）。
     """
-    weekday = today.isoweekday()  # 周一=1, 周日=7
-    new_state: dict[str, Any] = {
-        "last_run": today.isoformat(),
-        "episodes": dict(state.get("episodes", {})),
-    }
-    updates: list[str] = []
+    weekday = now.isoweekday()              # 周一=1, 周日=7
+    current_time = now.strftime("%H:%M")    # "10:00"
+    names: list[str] = []
 
     for entry in config["schedule"]:
         if entry["weekday"] != weekday:
             continue
-        name = entry["name"]
-        ep = new_state["episodes"].get(name, 0) + 1
-        new_state["episodes"][name] = ep
-        updates.append(f"📺 {name}  第 {ep} 集")
+        if entry["air_time"] != current_time:
+            continue
+        names.append(entry["name"])
 
-    if updates:
-        msg = "🎉 今日追番更新：\n" + "\n".join(updates)
-    else:
-        msg = "💤 今天没有要追的番，好好休息～"
+    if not names:
+        return None, "💤 今天没有要追的番"
 
-    return new_state, msg
+    title = "动漫更新：" + "、".join(names)
+    msg = "🎉 今日追番更新：\n" + "\n".join(f"📺 {n}" for n in names)
+    return title, msg
