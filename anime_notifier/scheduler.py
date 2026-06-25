@@ -15,7 +15,7 @@ def run(today: date, config: dict[str, Any], state: dict[str, Any]) -> tuple[dic
         "last_run": today.isoformat(),
         "episodes": dict(state.get("episodes", {})),
     }
-    hits: list[str] = []
+    updates: list[str] = []
 
     for entry in config["schedule"]:
         if entry["weekday"] != weekday:
@@ -23,10 +23,10 @@ def run(today: date, config: dict[str, Any], state: dict[str, Any]) -> tuple[dic
         name = entry["name"]
         ep = new_state["episodes"].get(name, 0) + 1
         new_state["episodes"][name] = ep
-        hits.append(f"📺 {name}  第 {ep} 集")
+        updates.append(f"📺 {name}  第 {ep} 集")
 
-    if hits:
-        msg = "🎉 今日追番更新：\n" + "\n".join(hits)
+    if updates:
+        msg = "🎉 今日追番更新：\n" + "\n".join(updates)
     else:
         msg = "💤 今天没有要追的番，好好休息～"
 
