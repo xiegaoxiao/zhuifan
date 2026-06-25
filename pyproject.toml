@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anime-notifier"
+version = "0.1.0"
+description = "Personal anime update notifier via Server Chan + GitHub Actions"
+requires-python = ">=3.12"
+dependencies = [
+    "PyYAML==6.0.1",
+    "python-dateutil==2.9.0",
+    "httpx==0.27.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.3"]
+
+[tool.setuptools.packages.find]
+include = ["anime_notifier*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
