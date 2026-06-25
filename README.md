@@ -92,3 +92,7 @@ python -m anime_notifier
 ## 架构
 
 见 [`docs/superpowers/specs/2026-06-25-anime-update-notifier-design.md`](docs/superpowers/specs/2026-06-25-anime-update-notifier-design.md)。
+"test $(date)" 
+"test $(date)" 
+"test $(date)" 
+"test $(date)" 
