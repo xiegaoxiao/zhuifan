@@ -2,6 +2,7 @@
 
 约定：
 - weekday: 1=周一, 7=周日
+- air_time: "HH:MM" 24小时制
 - send_key 支持 ${ENV_VAR} 占位符，从环境变量读取
 """
 from __future__ import annotations
@@ -18,6 +19,7 @@ class ConfigError(ValueError):
 
 
 _ENV_PATTERN = re.compile(r"\$\{([A-Z_][A-Z0-9_]*)\}")
+_AIR_TIME_PATTERN = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 
 
 def _resolve_env(value: Any) -> Any:
@@ -68,12 +70,18 @@ def load_config(path: str | Path) -> dict[str, Any]:
             raise ConfigError(
                 f"schedule[{i}].weekday={entry['weekday']} out of range 1..7"
             )
+        if "air_time" not in entry or not isinstance(entry["air_time"], str):
+            raise ConfigError(f"schedule[{i}].air_time missing or not string")
+        if not _AIR_TIME_PATTERN.match(entry["air_time"]):
+            raise ConfigError(
+                f"schedule[{i}].air_time={entry['air_time']!r} invalid (expect HH:MM)"
+            )
         if entry["name"] in seen_names:
             raise ConfigError(f"duplicate schedule name: {entry['name']!r}")
         seen_names.add(entry["name"])
 
     wechat = raw["wechat"]
-    for key in ("send_key", "push_time", "timezone"):
+    for key in ("send_key", "timezone"):
         if key not in wechat:
             raise ConfigError(f"wechat.{key} missing")
 
