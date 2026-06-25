@@ -1,40 +1,51 @@
-# 追番时间表 —— 工具每天 20:00（北京时间）检查今天 weekday 匹配的条目
-# weekday 编码：1=周一, 2=周二, 3=周三, 4=周四, 5=周五, 6=周六, 7=周日
+# 追番时间表 —— 工具每部番按 air_time 精确到分钟推送
+# weekday 编码：1=周一, 2=周二, ..., 7=周日
+# air_time 编码：HH:MM 24小时制
 schedule:
   # 周一
   - name: 仙逆
-    weekday: 1          # 10:00 腾讯视频
+    weekday: 1
+    air_time: "10:00"
 
   # 周二
   - name: 吞噬星空
-    weekday: 2          # 10:00 腾讯视频
+    weekday: 2
+    air_time: "10:00"
 
   # 周四
   - name: 将夜
-    weekday: 4          # 11:00 B站独播
+    weekday: 4
+    air_time: "11:00"
 
   # 周五
   - name: 完美世界
-    weekday: 5          # 10:00 腾讯视频
+    weekday: 5
+    air_time: "10:00"
   - name: 沧元图 第三季
-    weekday: 5          # 10:00
+    weekday: 5
+    air_time: "10:00"
   - name: 深空彼岸
-    weekday: 5          # 11:00 B站首播
+    weekday: 5
+    air_time: "11:00"
   - name: 斗罗大陆2 绝世唐门
-    weekday: 5          # 12:00 腾讯视频
+    weekday: 5
+    air_time: "12:00"
 
   # 周六
   - name: 凡人修仙传 年番
-    weekday: 6          # 11:00 B站独播
+    weekday: 6
+    air_time: "11:00"
 
   # 周日
   - name: 斗破苍穹 年番
-    weekday: 7          # 10:00 腾讯视频
+    weekday: 7
+    air_time: "10:00"
   - name: 牧神记
-    weekday: 7          # 11:00 B站独播
+    weekday: 7
+    air_time: "11:00"
 
 wechat:
-  # 真实 SendKey 从 GitHub Secrets 的 WECHAT_SEND_KEY 注入，不要直接填值
+  # ⚠️ 必须用占位符 ${WECHAT_SEND_KEY}，不要直接填真实 SendKey（避免泄露到 git 历史）
+  # CI 时会自动从 GitHub Secrets 注入
   send_key: "${WECHAT_SEND_KEY}"
-  push_time: "20:00"
   timezone: "Asia/Shanghai"
