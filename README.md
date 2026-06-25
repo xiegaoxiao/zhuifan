@@ -1,9 +1,10 @@
 # anime-notifier
 
-每天 20:00（北京时间）把当日追番更新推送到个人微信。
+每部番按其官方播出时间**精确到分钟**推送到个人微信。
 
-零成本：部署在 GitHub Actions，推送走 Server 酱免费版（攒批推送，1 条/天，永远不超 5 条/天额度）。
-零下载：只通知"今天更新了第几集"，不抓资源。
+零成本：部署在 GitHub Actions，推送走 Server 酱免费版（每个 air_time 触发一次，每天最多 4 条）。
+零下载：只通知"刚更新了"，不抓资源。
+零状态：不存任何持久化信息，每次推送都是独立的。
 零运维：写好配置后基本不用管。
 
 ## 5 分钟上手
@@ -21,17 +22,13 @@
 
 ### 3. 配 GitHub Secrets
 
-进入你的仓库 → Settings → Secrets and variables → Actions → New repository secret，添加两个：
+进入你的仓库 → Settings → Secrets and variables → Actions → New repository secret，添加一个：
 
 | 名称 | 值 |
 |---|---|
 | `WECHAT_SEND_KEY` | 第 2 步拿到的 SendKey |
-| `ACTIONS_TOKEN` | 一个**Classic** GitHub PAT（[点这里创建](https://github.com/settings/tokens/new)），**Expiration** 选 `No expiration`，**Scopes** **必须**勾 ✅ `repo`（"Full control of private repositories"） |
 
-> ⚠️ **PAT 三件套必做**：
-> 1. 创建时勾 `repo`（默认不勾，只勾了 public_repo 是不够的）
-> 2. 创建后**先在本地测 push**：`git clone https://<你的PAT>@github.com/<用户名>/<仓库>.git test && cd test && echo ok >> README.md && git push && cd .. && rm -rf test`，能成功再继续
-> 3. 填到 Secrets 时**不要带前后空格/换行**（密码管理器粘贴容易带）
+> ⚠️ **本版本不需要 PAT**。GitHub Actions 只需要读 checkout，不再 commit state.json（state.json 已删除）。
 
 ### 4. 编辑 `config.yaml`
 
@@ -42,13 +39,19 @@ cp config.example.yaml config.yaml
 $EDITOR config.yaml
 ```
 
-> ⚠️ **必须**把 `send_key:` 改成占位符（**绝对不能**直接填 SendKey 进 git 历史）：
+> ⚠️ **`air_time` 字段必填**，格式 `HH:MM`（24 小时制）。
 > ```yaml
+> schedule:
+>   - name: 仙逆
+>     weekday: 1          # 1=周一, 7=周日
+>     air_time: "10:00"   # 必填，精确到分钟
 > wechat:
->   send_key: "${WECHAT_SEND_KEY}"   # 占位符，CI 时自动注入
+>   send_key: "${WECHAT_SEND_KEY}"   # 必须用占位符
+>   timezone: "Asia/Shanghai"
 > ```
 
 `weekday` 编码：`1`=周一, `2`=周二, ..., `7`=周日。
+`air_time` 格式：`HH:MM`，例如 `"10:00"`、`"23:30"`。
 
 ### 5. 验证
 
@@ -58,11 +61,18 @@ pip install -e ".[dev]"
 python -m anime_notifier --dry-run
 ```
 
-应该打印一条类似这样的消息（取决于当天周几）：
+应该打印类似（取决于当前时间）：
 
 ```
 🎉 今日追番更新：
-📺 进击的巨人 最终季  第 1 集
+📺 完美世界
+📺 沧元图 第三季
+```
+
+或（无更新时）：
+
+```
+💤 今天没有要追的番
 ```
 
 ### 6. Push
@@ -77,14 +87,30 @@ git push
 
 进入仓库 → Actions → anime-notifier → Run workflow，确认 CI 通过、微信收到消息。
 
-### 8. 等第二天 20:00
+> 💡 **手动触发不受时间限制**——任何时候点 Run workflow 都会跑，工具内部按当前真实时间匹配 air_time。
 
-每天北京时间 20:00 自动触发。
+### 8. 等到 air_time 触发
+
+每周对应时间的 cron 触发，CI 跑 1 分钟内推送到微信。
+
+## 加新番
+
+`config.yaml` 加新条目：
+
+```yaml
+  - name: 新番
+    weekday: 3
+    air_time: "20:00"
+```
+
+**两种情况**：
+
+- `air_time` 在现有 9 个时间点之内（如 10:00 / 11:00 / 12:00）→ 只需 `git push`，不动 workflow
+- `air_time` 是新时间点（如 13:00）→ 改 `config.yaml` + workflow 加一条 cron
 
 ## 完结/调整
 
-- **加新番**：编辑 `config.yaml` 加一行 `git push`
-- **完结某部**：从 `config.yaml` 删除该条目（`state.json` 里的旧记录无害保留，工具会自动跳过）
+- **完结某部**：从 `config.yaml` 删除对应条目，`git push`
 - **临时停推**：仓库 → Settings → Actions → disable workflow
 
 ## 本地开发
@@ -102,4 +128,4 @@ python -m anime_notifier
 
 ## 架构
 
-见 [`docs/superpowers/specs/2026-06-25-anime-update-notifier-design.md`](docs/superpowers/specs/2026-06-25-anime-update-notifier-design.md)。
+见 [`docs/superpowers/specs/2026-06-25-anime-update-notifier-realtime-design.md`](docs/superpowers/specs/2026-06-25-anime-update-notifier-realtime-design.md)。
