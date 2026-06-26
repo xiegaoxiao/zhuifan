@@ -29,7 +29,7 @@ schedule:
     air_time: "11:00"
   - name: 斗罗大陆2 绝世唐门
     weekday: 5
-    air_time: "12:30"
+    air_time: "12:00"
 
   # 周六
   - name: 凡人修仙传 年番
